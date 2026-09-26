@@ -8,6 +8,11 @@
   <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-Compose-5EEAD4?style=for-the-badge&logo=kotlin&logoColor=white&labelColor=0A0E13">
   <img alt="Tanpa root" src="https://img.shields.io/badge/Root-tidak%20perlu-FF4D6D?style=for-the-badge&labelColor=0A0E13">
 </p>
+<p align="center">
+  <a href="../../actions/workflows/ci.yml"><img alt="CI" src="https://github.com/fk0u/MockLocation/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="Lisensi MIT" src="https://img.shields.io/badge/lisensi-MIT-5EEAD4"></a>
+  <a href="../../releases/latest"><img alt="Rilis terbaru" src="https://img.shields.io/github/v/release/fk0u/MockLocation?color=5EEAD4&label=rilis"></a>
+</p>
 
 **Mock Location** adalah aplikasi Android untuk memalsukan lokasi GPS perangkat, **tanpa root**. Pilih satu titik lalu teleport, jalankan rute otomatis antar waypoint dengan kecepatan realistis, atau kendalikan arah langsung pakai joystick. Joystick-nya bahkan bisa melayang di atas aplikasi lain.
 
@@ -55,6 +60,10 @@ Selesai. Panduan lengkap per mode, tips, dan pemecahan masalah ada di [**Panduan
 | [Pengembangan](docs/PENGEMBANGAN.md) | Build dari source, test, signing, cara merilis |
 | [Changelog](CHANGELOG.md) | Riwayat versi |
 
+## 🤝 Kontribusi
+
+Laporan bug, ide, dan pull request sangat disambut! Baca [Panduan Kontribusi](CONTRIBUTING.md) dan [Kode Etik](CODE_OF_CONDUCT.md) terlebih dulu. Celah keamanan dilaporkan secara privat sesuai [Kebijakan Keamanan](SECURITY.md).
+
 ## ⚠️ Penggunaan yang bertanggung jawab
 
 Aplikasi ini ditujukan untuk **pengujian aplikasi berbasis lokasi, demo, dan privasi**. Android menandai setiap lokasi dari aplikasi ini sebagai *mock*, sehingga banyak aplikasi (perbankan, ojek online, sebagian game) bisa mendeteksinya lalu menolak akses atau menangguhkan akun. Memalsukan lokasi untuk menipu layanan, absensi, atau transaksi bisa melanggar ketentuan layanan maupun hukum. Segala risiko penggunaan ditanggung pengguna.
@@ -62,3 +71,7 @@ Aplikasi ini ditujukan untuk **pengujian aplikasi berbasis lokasi, demo, dan pri
 ## 🙏 Atribusi
 
 Peta © [Esri](https://www.esri.com), HERE, Garmin, © [OpenStreetMap contributors](https://www.openstreetmap.org/copyright). Pencarian oleh [Nominatim](https://nominatim.org). Rendering peta memakai [osmdroid](https://github.com/osmdroid/osmdroid).
+
+## 📄 Lisensi
+
+Dirilis di bawah [Lisensi MIT](LICENSE) © 2026 Al-Ghani Desta Setyawan ([@fk0u](https://github.com/fk0u)). Kamu bebas memakai, memodifikasi, dan mendistribusikan ulang, asalkan menyertakan pemberitahuan hak cipta dan lisensi.

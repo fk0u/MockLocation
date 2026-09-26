@@ -1,0 +1,58 @@
+name: 🐞 Laporan bug
+description: Laporkan sesuatu yang tidak berjalan semestinya
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih sudah melapor! Cek dulu [FAQ di Panduan](https://github.com/fk0u/MockLocation/blob/main/docs/PANDUAN.md#10-pemecahan-masalah-faq). Masalah umum seperti mock berhenti sendiri biasanya sudah ada solusinya di sana.
+  - type: textarea
+    id: masalah
+    attributes:
+      label: Apa yang terjadi?
+      description: Jelaskan bug-nya dengan jelas dan singkat.
+    validations:
+      required: true
+  - type: textarea
+    id: langkah
+    attributes:
+      label: Langkah reproduksi
+      placeholder: |
+        1. Buka mode Rute
+        2. Tambah 3 titik
+        3. Tekan Mulai rute
+        4. …
+    validations:
+      required: true
+  - type: textarea
+    id: harapan
+    attributes:
+      label: Yang diharapkan
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      multiple: true
+      options: [Teleport, Rute, Joystick, Joystick melayang, Pencarian, GPX, Lainnya]
+  - type: input
+    id: perangkat
+    attributes:
+      label: Perangkat & versi Android
+      placeholder: Xiaomi Redmi Note 12, Android 14 (HyperOS 1.0)
+    validations:
+      required: true
+  - type: input
+    id: versi
+    attributes:
+      label: Versi aplikasi
+      placeholder: "2.0"
+    validations:
+      required: true
+  - type: textarea
+    id: bukti
+    attributes:
+      label: Screenshot / log
+      description: Seret gambar ke sini, atau tempel keluaran `adb logcat -b crash`.
+      render: text

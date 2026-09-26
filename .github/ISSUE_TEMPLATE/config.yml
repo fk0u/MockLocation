@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Panduan & FAQ
+    url: https://github.com/fk0u/MockLocation/blob/main/docs/PANDUAN.md
+    about: Cara setup, pemakaian tiap mode, dan solusi masalah umum.
+  - name: 🔒 Laporkan celah keamanan
+    url: https://github.com/fk0u/MockLocation/security/advisories/new
+    about: Laporkan secara privat, jangan lewat issue publik.

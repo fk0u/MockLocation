@@ -1,0 +1,28 @@
+name: ✨ Usulan fitur
+description: Usulkan ide atau peningkatan
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: masalah
+    attributes:
+      label: Masalah apa yang ingin diselesaikan?
+      description: Ceritakan situasinya, misalnya "Saya selalu kesulitan saat …".
+    validations:
+      required: true
+  - type: textarea
+    id: solusi
+    attributes:
+      label: Solusi yang diusulkan
+    validations:
+      required: true
+  - type: textarea
+    id: alternatif
+    attributes:
+      label: Alternatif yang sudah dipertimbangkan
+  - type: checkboxes
+    id: etika
+    attributes:
+      label: Konfirmasi
+      options:
+        - label: Fitur ini bukan untuk menyembunyikan deteksi mock atau memudahkan penipuan.
+          required: true
