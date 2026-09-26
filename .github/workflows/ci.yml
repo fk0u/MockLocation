@@ -22,12 +22,12 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Unit test & build debug
         run: ./gradlew testDebugUnitTest assembleDebug --no-daemon
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: laporan-test
           path: app/build/reports/tests/
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: mocklocation-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
