@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="t">
+  <title id="t">Arsitektur Mock Location: UI Compose, AppVm, MockState, MockService, LocationManager test provider</title>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#5EEAD4"/>
+    </marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#FF4D6D"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="560" rx="28" fill="#0A0E13"/>
+  <g font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+    <text x="40" y="52" font-size="14" font-weight="700" fill="#8D9AAD" letter-spacing="1.5">PROSES APLIKASI</text>
+    <rect x="30" y="68" width="820" height="460" rx="22" fill="none" stroke="#FFFFFF" stroke-opacity="0.08" stroke-dasharray="6 6"/>
+
+    <!-- UI -->
+    <g transform="translate(60 100)">
+      <rect width="250" height="150" rx="18" fill="#111720" stroke="#5EEAD4" stroke-opacity="0.4"/>
+      <text x="20" y="38" font-size="20" font-weight="800" fill="#E7EEF6">UI (Compose)</text>
+      <text x="20" y="64" font-size="14" fill="#8D9AAD">Ui.kt · MainActivity.kt</text>
+      <text x="20" y="96" font-size="14" fill="#E7EEF6">Peta osmdroid + Scene</text>
+      <text x="20" y="118" font-size="14" fill="#E7EEF6">Panel, pencarian, joystick</text>
+    </g>
+    <!-- VM -->
+    <g transform="translate(60 330)">
+      <rect width="250" height="150" rx="18" fill="#111720" stroke="#FFFFFF" stroke-opacity="0.12"/>
+      <text x="20" y="38" font-size="20" font-weight="800" fill="#E7EEF6">AppVm</text>
+      <text x="20" y="64" font-size="14" fill="#8D9AAD">ViewModel</text>
+      <text x="20" y="96" font-size="14" fill="#E7EEF6">State rute, favorit, setup</text>
+      <text x="20" y="118" font-size="14" fill="#E7EEF6">Store (SharedPreferences)</text>
+    </g>
+    <!-- MockState -->
+    <g transform="translate(350 215)">
+      <rect width="200" height="130" rx="18" fill="#111720" stroke="#FBBF24" stroke-opacity="0.5"/>
+      <text x="20" y="38" font-size="20" font-weight="800" fill="#FBBF24">MockState</text>
+      <text x="20" y="64" font-size="14" fill="#8D9AAD">StateFlow&lt;Status&gt;</text>
+      <text x="20" y="92" font-size="14" fill="#E7EEF6">+ joyX / joyY</text>
+    </g>
+    <!-- Service -->
+    <g transform="translate(590 100)">
+      <rect width="240" height="200" rx="18" fill="#111720" stroke="#FF4D6D" stroke-opacity="0.5"/>
+      <text x="20" y="38" font-size="20" font-weight="800" fill="#E7EEF6">MockService</text>
+      <text x="20" y="64" font-size="14" fill="#8D9AAD">Foreground service</text>
+      <text x="20" y="96" font-size="14" fill="#E7EEF6">Tick tiap 500 ms</text>
+      <text x="20" y="118" font-size="14" fill="#E7EEF6">RoutePlayer (geo)</text>
+      <text x="20" y="140" font-size="14" fill="#E7EEF6">Notifikasi Jeda/Stop</text>
+      <text x="20" y="162" font-size="14" fill="#E7EEF6">JoystickOverlay</text>
+    </g>
+    <!-- Overlay -->
+    <g transform="translate(590 360)">
+      <rect width="240" height="120" rx="18" fill="#111720" stroke="#FFFFFF" stroke-opacity="0.12"/>
+      <text x="20" y="38" font-size="20" font-weight="800" fill="#E7EEF6">Joystick melayang</text>
+      <text x="20" y="64" font-size="14" fill="#8D9AAD">WindowManager overlay</text>
+      <text x="20" y="92" font-size="14" fill="#E7EEF6">Tampil di atas app lain</text>
+    </g>
+
+    <!-- System -->
+    <text x="900" y="52" font-size="14" font-weight="700" fill="#8D9AAD" letter-spacing="1.5">SISTEM ANDROID</text>
+    <g transform="translate(890 100)">
+      <rect width="270" height="200" rx="18" fill="#111720" stroke="#5EEAD4" stroke-opacity="0.4"/>
+      <text x="20" y="38" font-size="20" font-weight="800" fill="#E7EEF6">LocationManager</text>
+      <text x="20" y="64" font-size="14" fill="#8D9AAD">Test provider</text>
+      <text x="20" y="100" font-size="15" fill="#5EEAD4">● gps</text>
+      <text x="20" y="126" font-size="15" fill="#5EEAD4">● network</text>
+      <text x="20" y="160" font-size="14" fill="#8D9AAD">→ fused ikut memakai</text>
+    </g>
+    <g transform="translate(890 360)">
+      <rect width="270" height="120" rx="18" fill="#111720" stroke="#FFFFFF" stroke-opacity="0.12"/>
+      <text x="20" y="38" font-size="20" font-weight="800" fill="#E7EEF6">Aplikasi lain</text>
+      <text x="20" y="64" font-size="14" fill="#8D9AAD">Maps, game, dll.</text>
+      <text x="20" y="92" font-size="14" fill="#E7EEF6">membaca lokasi palsu</text>
+    </g>
+
+    <!-- arrows -->
+    <g fill="none" stroke-width="2.5">
+      <path d="M185 250V322" stroke="#5EEAD4" marker-end="url(#a)" marker-start="url(#a)"/>
+      <path d="M310 400 C340 400 330 330 350 318" stroke="#FBBF24" stroke-opacity="0.8" marker-end="url(#a)"/>
+      <path d="M550 262 C570 262 570 220 588 214" stroke="#FBBF24" stroke-opacity="0.8" marker-start="url(#a)"/>
+      <path d="M310 175 H580" stroke="#5EEAD4" marker-end="url(#a)" stroke-dasharray="7 6"/>
+      <path d="M710 360V308" stroke="#5EEAD4" marker-end="url(#a)"/>
+      <path d="M830 200 H880" stroke="#FF4D6D" marker-end="url(#r)"/>
+      <path d="M1025 300V352" stroke="#FF4D6D" marker-end="url(#r)"/>
+    </g>
+    <g font-size="12" fill="#8D9AAD">
+      <text x="400" y="165">Intent start/stop/jump</text>
+      <text x="836" y="190">set lokasi</text>
+    </g>
+  </g>
+</svg>
