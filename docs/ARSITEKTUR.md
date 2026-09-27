@@ -32,8 +32,9 @@ Setiap lokasi diisi lengkap (`accuracy`, `speed`, `bearing`, `elapsedRealtimeNan
 | `MapScene.kt` | Overlay osmdroid kustom: menggambar rute, jejak, target, dan **posisi live yang diinterpolasi**. Menangani ketuk dan seret waypoint. Sumber ubin peta. |
 | `MockService.kt` | *Foreground service* bertipe `location`. Loop tiap 500 ms: hitung posisi → kirim ke test provider → publikasikan `Status`. Juga notifikasi Jeda/Stop. |
 | `JoystickOverlay.kt` | Joystick berbasis `View` yang ditempel ke `WindowManager` (`TYPE_APPLICATION_OVERLAY`) agar tampil di atas aplikasi lain. |
-| `RoutePlayer.kt` | Logika murni tanpa Android: haversine, bearing, `move`, posisi sepanjang rute untuk tiap pola putaran, parser/penulis GPX, format jarak/waktu. **Seluruhnya di-unit-test.** |
-| `Store.kt` | Persistensi kecil berbasis `SharedPreferences` + JSON: pengaturan, draf rute, favorit, rute tersimpan, posisi kamera. |
+| `QsTile.kt` | `TileService` Quick Settings: stop bila aktif, selain itu teleport ke titik terakhir dari `Store`. Membuka aplikasi bila setup belum siap. |
+| `RoutePlayer.kt` | Logika murni tanpa Android: haversine, bearing, `move`, posisi sepanjang rute untuk tiap pola putaran, titik singgah (`stops`/`nextStop`), riwayat (`addRecent`), parser/penulis GPX, format jarak/waktu. **Seluruhnya di-unit-test.** |
+| `Store.kt` | Persistensi kecil berbasis `SharedPreferences` + JSON: pengaturan, draf rute, favorit, riwayat, rute tersimpan, posisi kamera. |
 
 ## Alur data
 

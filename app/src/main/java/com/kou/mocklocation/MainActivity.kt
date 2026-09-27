@@ -3,11 +3,14 @@ package com.kou.mocklocation
 import android.Manifest
 import android.app.AppOpsManager
 import android.app.Application
+import android.app.StatusBarManager
+import android.content.ComponentName
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -63,6 +66,16 @@ data class Setup(
     val ready get() = location && mockApp
 }
 
+fun hasLocation(c: Context) = c.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+fun isMockApp(c: Context): Boolean = try {
+    val ops = c.getSystemService(AppOpsManager::class.java)
+    val mode = if (Build.VERSION.SDK_INT >= 29)
+        ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_MOCK_LOCATION, Process.myUid(), c.packageName)
+    else @Suppress("DEPRECATION") ops.checkOpNoThrow(AppOpsManager.OPSTR_MOCK_LOCATION, Process.myUid(), c.packageName)
+    mode == AppOpsManager.MODE_ALLOWED
+} catch (e: Exception) { true } // can't tell; let the service try and report
+
 class AppVm(app: Application) : AndroidViewModel(app) {
     private val ctx: Context get() = getApplication()
     private val store = Store(app)
@@ -75,8 +88,13 @@ class AppVm(app: Application) : AndroidViewModel(app) {
     var humanize by mutableStateOf(store.humanize)
     var floating by mutableStateOf(store.floating)
     var mapStyle by mutableStateOf(store.mapStyle)
+    var dwellSec by mutableStateOf(store.dwellSec)
+    var altitude by mutableFloatStateOf(store.altitude)
     var favorites by mutableStateOf(store.favorites)
         private set
+    var history by mutableStateOf(store.history)
+        private set
+    private var targetName: String? = null
     var routes by mutableStateOf(store.routes)
         private set
     var camera = store.camera
@@ -97,6 +115,7 @@ class AppVm(app: Application) : AndroidViewModel(app) {
     var setup by mutableStateOf(Setup())
         private set
     var showSetup by mutableStateOf(false)
+    var showSettings by mutableStateOf(false)
     var locationAsked = 0
 
     val status = MockState.status
@@ -139,7 +158,7 @@ class AppVm(app: Application) : AndroidViewModel(app) {
         when (mode) {
             Mode.ROUTE -> if (!(s.running && s.mode == Mode.ROUTE)) points += p
             Mode.TELEPORT, Mode.JOYSTICK -> {
-                target = p
+                target = p; targetName = null
                 if (s.running && s.mode == mode) MockService.jump(ctx, p)
             }
         }
@@ -201,6 +220,7 @@ class AppVm(app: Application) : AndroidViewModel(app) {
         results = emptyList(); query = ""
         flyTo = p.pt
         onMapTap(p.pt)
+        if (target == p.pt) targetName = p.name
     }
 
     fun clearSearch() { searchJob?.cancel(); searching = false; query = ""; results = emptyList() }
@@ -247,9 +267,33 @@ class AppVm(app: Application) : AndroidViewModel(app) {
         if (mode == Mode.ROUTE && pts.size < 2) return say("Tambahkan minimal 2 titik rute")
         if (mode == Mode.JOYSTICK && target == null) target = center
         trail.clear(); follow = true
+        if (mode != Mode.ROUTE) target?.let { t ->
+            history = addRecent(history, Place(targetName ?: fmtPt(t), t)); store.history = history
+        }
         persist()
-        MockService.start(ctx, mode, pts, speedKmh / 3.6, loop, humanize, floating && setup.overlay)
+        MockService.start(ctx, mode, pts, speedKmh / 3.6, loop, humanize, floating && setup.overlay,
+            if (mode == Mode.ROUTE) dwellSec else 0, altitude.toDouble())
     }
+
+    @androidx.annotation.RequiresApi(33)
+    fun addTile() = ctx.getSystemService(StatusBarManager::class.java).requestAddTileService(
+        ComponentName(ctx, QsTile::class.java), "Mock Location", Icon.createWithResource(ctx, R.drawable.ic_stat), ctx.mainExecutor,
+    ) {
+        say(when (it) {
+            StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ADDED -> "Tile ditambahkan"
+            StatusBarManager.TILE_ADD_REQUEST_RESULT_TILE_ALREADY_ADDED -> "Tile sudah ada di Quick Settings"
+            else -> "Tile tidak ditambahkan"
+        })
+    }
+
+    fun clearHistory() { history = emptyList(); store.history = history; say("Riwayat dihapus") }
+
+    fun clearMapCache() = viewModelScope.launch {
+        withContext(Dispatchers.IO) { File(ctx.cacheDir, "osm/tiles").deleteRecursively() }
+        say("Cache peta dihapus")
+    }
+
+    val version: String = runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull() ?: "?"
 
     fun stop() = MockService.stop(ctx)
     fun togglePause() = MockService.togglePause(ctx)
@@ -260,7 +304,7 @@ class AppVm(app: Application) : AndroidViewModel(app) {
     fun refreshSetup() {
         val c = ctx
         setup = Setup(
-            location = c.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED,
+            location = hasLocation(c),
             notifications = Build.VERSION.SDK_INT < 33 ||
                 c.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED,
             devOptions = Settings.Global.getInt(c.contentResolver, Settings.Global.DEVELOPMENT_SETTINGS_ENABLED, 0) == 1,
@@ -268,14 +312,6 @@ class AppVm(app: Application) : AndroidViewModel(app) {
             overlay = Settings.canDrawOverlays(c),
         )
     }
-
-    private fun isMockApp(c: Context): Boolean = try {
-        val ops = c.getSystemService(AppOpsManager::class.java)
-        val mode = if (Build.VERSION.SDK_INT >= 29)
-            ops.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_MOCK_LOCATION, Process.myUid(), c.packageName)
-        else @Suppress("DEPRECATION") ops.checkOpNoThrow(AppOpsManager.OPSTR_MOCK_LOCATION, Process.myUid(), c.packageName)
-        mode == AppOpsManager.MODE_ALLOWED
-    } catch (e: Exception) { true } // can't tell; let the service try and report
 
     fun openDevSettings(c: Context) {
         val action = if (setup.devOptions) Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS else Settings.ACTION_DEVICE_INFO_SETTINGS
@@ -294,5 +330,6 @@ class AppVm(app: Application) : AndroidViewModel(app) {
         store.mode = mode; store.draft = points.toList(); store.target = target
         store.speedKmh = speedKmh; store.loop = loop; store.humanize = humanize
         store.floating = floating; store.mapStyle = mapStyle
+        store.dwellSec = dwellSec; store.altitude = altitude
     }
 }

@@ -37,6 +37,12 @@ class Store(ctx: Context) {
     var floating: Boolean
         get() = p.getBoolean("floating", false)
         set(v) = p.edit { putBoolean("floating", v) }
+    var dwellSec: Int
+        get() = p.getInt("dwell", 0)
+        set(v) = p.edit { putInt("dwell", v) }
+    var altitude: Float
+        get() = p.getFloat("altitude", 12f)
+        set(v) = p.edit { putFloat("altitude", v) }
     var draft: List<Pt>
         get() = pts(JSONArray(p.getString("draft", "[]")))
         set(v) = p.edit { putString("draft", json(v).toString()) }
@@ -48,11 +54,18 @@ class Store(ctx: Context) {
         set(v) = p.edit { putFloat("camLat", v.lat.toFloat()); putFloat("camLon", v.lon.toFloat()); putFloat("camZoom", v.zoom.toFloat()) }
 
     var favorites: List<Place>
-        get() = objs("favorites").map { Place(it.getString("n"), Pt(it.getDouble("lat"), it.getDouble("lon"))) }
-        set(v) = p.edit { putString("favorites", JSONArray(v.map { JSONObject().put("n", it.name).put("lat", it.pt.lat).put("lon", it.pt.lon) }).toString()) }
+        get() = places("favorites")
+        set(v) = places("favorites", v)
+    var history: List<Place>
+        get() = places("history")
+        set(v) = places("history", v)
     var routes: List<SavedRoute>
         get() = objs("routes").map { SavedRoute(it.getString("n"), pts(it.getJSONArray("p"))) }
         set(v) = p.edit { putString("routes", JSONArray(v.map { JSONObject().put("n", it.name).put("p", json(it.points)) }).toString()) }
+
+    private fun places(key: String) = objs(key).map { Place(it.getString("n"), Pt(it.getDouble("lat"), it.getDouble("lon"))) }
+    private fun places(key: String, v: List<Place>) =
+        p.edit { putString(key, JSONArray(v.map { JSONObject().put("n", it.name).put("lat", it.pt.lat).put("lon", it.pt.lon) }).toString()) }
 
     private fun objs(key: String) = runCatching {
         JSONArray(p.getString(key, "[]")).let { a -> (0 until a.length()).map { a.getJSONObject(it) } }

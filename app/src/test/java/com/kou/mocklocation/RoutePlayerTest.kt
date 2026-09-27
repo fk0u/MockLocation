@@ -62,6 +62,28 @@ class RoutePlayerTest {
         assertEquals(listOf(Pt(1.5, 2.5), Pt(3.0, 4.0)), Gpx.parse(xml.byteInputStream()))
     }
 
+    @Test fun stopsAtWaypoints() {
+        val leg = RoutePlayer.dist(route[0], route[1])
+        assertEquals(listOf(leg), RoutePlayer.stops(route, Loop.ONCE))
+        assertEquals(3, RoutePlayer.stops(route, Loop.LOOP).size)
+        assertEquals(RoutePlayer.cycle(route, Loop.LOOP), RoutePlayer.stops(route, Loop.LOOP).last(), 1e-6)
+        assertEquals(listOf(leg, total, 2 * total - leg, 2 * total), RoutePlayer.stops(route, Loop.PINGPONG))
+
+        assertEquals(leg, RoutePlayer.nextStop(route, Loop.ONCE, 0.0, leg + 5)!!, 1e-9)
+        assertNull(RoutePlayer.nextStop(route, Loop.ONCE, leg, leg + 5))          // already there
+        assertNull(RoutePlayer.nextStop(route, Loop.ONCE, total - 5, total + 5)) // finish isn't a stop
+        val c = RoutePlayer.cycle(route, Loop.LOOP)
+        assertEquals(c + leg, RoutePlayer.nextStop(route, Loop.LOOP, c + 1, c + leg + 1)!!, 1e-6) // second lap
+        assertNull(RoutePlayer.nextStop(listOf(route[0]), Loop.LOOP, 0.0, 10.0))
+    }
+
+    @Test fun recentHistory() {
+        val a = Place("A", Pt(-6.2, 106.8)); val b = Place("B", Pt(-6.3, 106.9))
+        val near = Place("A lagi", RoutePlayer.move(a.pt, 0.0, 5.0))
+        assertEquals(listOf(near, b), addRecent(addRecent(addRecent(emptyList(), a), b), near))
+        assertEquals(2, (1..5).fold(emptyList<Place>()) { h, i -> addRecent(h, Place("$i", Pt(i.toDouble(), 0.0)), 2) }.size)
+    }
+
     @Test fun formats() {
         assertEquals("850 m", fmtDist(850.2))
         assertEquals("1,25 km", fmtDist(1250.0))

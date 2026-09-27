@@ -77,7 +77,32 @@ object RoutePlayer {
             Loop.PINGPONG -> (d % (2 * total)).let { m -> if (m <= total) at(route, m) else at(route.reversed(), m - total) }
         }
     }
+
+    /** Distances within one cycle, in (0, cycle], where the route passes a waypoint worth stopping at. */
+    fun stops(route: List<Pt>, loop: Loop): List<Double> {
+        if (route.size < 2) return emptyList()
+        val cum = route.zipWithNext { a, b -> dist(a, b) }.runningFold(0.0, Double::plus)
+        val total = cum.last()
+        return when (loop) {
+            Loop.ONCE -> cum.subList(1, cum.size - 1)                  // the final point is the finish, not a stop
+            Loop.LOOP -> cum.drop(1) + (total + dist(route.last(), route.first()))
+            Loop.PINGPONG -> cum.drop(1) + cum.dropLast(1).reversed().map { 2 * total - it }
+        }.filter { it > 0 }
+    }
+
+    /** First waypoint stop reached when moving from [from] to [to] meters (exclusive, inclusive), or null. */
+    fun nextStop(route: List<Pt>, loop: Loop, from: Double, to: Double): Double? {
+        val stops = stops(route, loop).ifEmpty { return null }
+        val c = cycle(route, loop)
+        val cycles = if (loop == Loop.ONCE) 0L..0L else (from / c).toLong()..(to / c).toLong()
+        for (k in cycles) for (s in stops) (k * c + s).let { if (it > from && it <= to) return it }
+        return null
+    }
 }
+
+/** Most-recent-first history: [p] goes on top, replacing any entry within 15 m of it. */
+fun addRecent(history: List<Place>, p: Place, max: Int = 20) =
+    (listOf(p) + history.filter { RoutePlayer.dist(it.pt, p.pt) > 15 }).take(max)
 
 private val LATLON = Regex("""^\s*(-?\d{1,3}(?:\.\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:\.\d+)?)\s*$""")
 
