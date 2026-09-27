@@ -733,7 +733,7 @@ private fun Chip(label: String, icon: ImageVector, tint: Color, selected: Boolea
 private fun SwitchRow(icon: ImageVector, title: String, sub: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
     val tint by animateColorAsState(if (checked) Teal else Muted, label = "switchTint")
     Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Card)
-        .toggleable(checked, enabled, Role.Switch, onChange).alpha(if (enabled) 1f else .5f)
+        .toggleable(checked, enabled = enabled, role = Role.Switch, onValueChange = onChange).alpha(if (enabled) 1f else .5f)
         .padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(icon, null, tint = tint)
         Spacer(Modifier.width(12.dp))
