@@ -359,8 +359,8 @@ private fun SearchBox(vm: AppVm) {
 }
 
 @Composable
-private fun ResultRow(icon: ImageVector, title: String, sub: String, tint: Color = Teal, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp),
+private fun ResultRow(icon: ImageVector, title: String, sub: String, tint: Color = Teal, onClick: (() -> Unit)?) {
+    Row(Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically) {
         IconBubble(icon, tint, 34)
         Spacer(Modifier.width(12.dp))
@@ -912,14 +912,15 @@ private fun SettingsSheet(vm: AppVm) {
             }
             ResultRow(Icons.Rounded.ToggleOn, "Tile Quick Settings",
                 if (Build.VERSION.SDK_INT >= 33) "Tambahkan tombol teleport ke panel notifikasi"
-                else "Edit panel Quick Settings, lalu seret tile Mock Location") { if (Build.VERSION.SDK_INT >= 33) vm.addTile() }
+                else "Edit panel Quick Settings, lalu seret tile Mock Location",
+                onClick = if (Build.VERSION.SDK_INT >= 33) vm::addTile else null)
 
             Label("Data", Modifier.padding(horizontal = 20.dp).padding(top = 16.dp, bottom = 4.dp))
             ResultRow(Icons.Rounded.History, "Hapus riwayat", "${vm.history.size} lokasi terakhir") { vm.clearHistory() }
             ResultRow(Icons.Rounded.CleaningServices, "Hapus cache peta", "Unduh ulang ubin peta saat dibutuhkan") { vm.clearMapCache() }
 
             Label("Tentang", Modifier.padding(horizontal = 20.dp).padding(top = 16.dp, bottom = 4.dp))
-            ResultRow(Icons.Rounded.Info, "Mock Location ${vm.version}", "© 2026 Al-Ghani Desta Setyawan · Lisensi MIT") {}
+            ResultRow(Icons.Rounded.Info, "Mock Location ${vm.version}", "© 2026 Al-Ghani Desta Setyawan · Lisensi MIT", onClick = null)
             ResultRow(Icons.Rounded.Code, "Kode sumber", "github.com/fk0u/MockLocation") { uri.openUri("https://github.com/fk0u/MockLocation") }
             ResultRow(Icons.Rounded.BugReport, "Laporkan masalah", "Buka GitHub Issues") { uri.openUri("https://github.com/fk0u/MockLocation/issues") }
             Text("Peta © Esri, HERE, Garmin, © OpenStreetMap contributors. Pencarian oleh Nominatim. Rendering peta oleh osmdroid.\n\n" +

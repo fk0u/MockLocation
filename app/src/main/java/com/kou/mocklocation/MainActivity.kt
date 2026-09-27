@@ -159,6 +159,7 @@ class AppVm(app: Application) : AndroidViewModel(app) {
             Mode.ROUTE -> if (!(s.running && s.mode == Mode.ROUTE)) points += p
             Mode.TELEPORT, Mode.JOYSTICK -> {
                 target = p; targetName = null
+                store.target = p // the Quick Settings tile reads it, possibly before onPause persists
                 if (s.running && s.mode == mode) MockService.jump(ctx, p)
             }
         }

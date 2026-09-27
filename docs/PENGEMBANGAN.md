@@ -5,10 +5,10 @@
 | Alat | Versi |
 |---|---|
 | JDK | 17 |
-| Android SDK | Platform 34, Build-Tools 34 |
-| Gradle | 8.9 (otomatis lewat `./gradlew`) |
-| Android Gradle Plugin | 8.5.2 |
-| Kotlin | 2.0.20 (dengan plugin Compose compiler) |
+| Android SDK | Platform 37 (compileSdk), target 34 |
+| Gradle | 9.7.1 (otomatis lewat `./gradlew`) |
+| Android Gradle Plugin | 9.4.1 (Kotlin bawaan) |
+| Kotlin | 2.4.20 (dengan plugin Compose compiler) |
 
 Cara termudah: buka folder proyek di **Android Studio**, yang akan mengunduh SDK yang dibutuhkan. Kalau lewat terminal, set `ANDROID_HOME` ke lokasi SDK atau buat `local.properties`:
 

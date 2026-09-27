@@ -49,7 +49,7 @@ class TileLauncher : Activity() {
         val store = Store(this)
         val target = store.target
         val ok = target != null && hasLocation(this) && isMockApp(this) && runCatching {
-            MockService.start(this, Mode.TELEPORT, listOf(target), 0.0, Loop.ONCE, store.humanize, false,
+            MockService.start(this, Mode.TELEPORT, listOf(target), store.speedKmh / 3.6, Loop.ONCE, store.humanize, false,
                 altitude = store.altitude.toDouble())
         }.isSuccess
         if (ok) store.mode = Mode.TELEPORT
