@@ -89,7 +89,7 @@ Kalau `keystore.properties` tidak ada, `assembleRelease` tetap berjalan tapi men
 2. Tambahkan catatan di `CHANGELOG.md`.
 3. Build dan verifikasi:
    ```bash
-   ./gradlew testReleaseUnitTest assembleRelease
+   ./gradlew testDebugUnitTest assembleRelease
    apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk
    ```
 4. Commit, beri tag, lalu buat rilis GitHub:
