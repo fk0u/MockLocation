@@ -37,14 +37,18 @@
 | 📂 | **GPX** | Impor rute dari file `.gpx` (Strava, Komoot, dll.) dan ekspor rute buatan sendiri. |
 | 🔎 | **Pencarian** | Cari tempat via OpenStreetMap/Nominatim atau tempel koordinat `-6.1754, 106.8272`. |
 | 🗺️ | **3 gaya peta** | Gelap, Jalan, dan Satelit. Tanpa API key. |
+| ⏳ | **Singgah di titik** | Rute berhenti 5 dtk–1 mnt di setiap waypoint, seperti mampir. |
+| 🕘 | **Riwayat** | 20 lokasi terakhir muncul di pencarian, siap dipakai lagi. |
 | 🔔 | **Notifikasi kontrol** | Jeda, lanjut, dan stop langsung dari notifikasi. |
+| ⚡ | **Tile Quick Settings** | Teleport ke titik terakhir atau stop langsung dari panel notifikasi. |
+| ⚙️ | **Setelan** | Atur ketinggian, hapus riwayat/cache, info aplikasi. |
 | 🧭 | **Setup terpandu** | Checklist izin dan Opsi Developer dengan tombol pintas. |
 
 ## 📥 Instalasi
 
 <p align="center"><img src="docs/assets/setup.svg" alt="Alur setup dalam 4 langkah" width="100%"></p>
 
-1. Unduh `MockLocation-v2.0.apk` dari halaman [**Releases**](../../releases/latest), lalu install. Izinkan *Install dari sumber tidak dikenal* bila diminta.
+1. Unduh `MockLocation-v2.1.apk` dari halaman [**Releases**](../../releases/latest), lalu install. Izinkan *Install dari sumber tidak dikenal* bila diminta.
 2. Buka aplikasi, lalu izinkan **lokasi** dan **notifikasi**.
 3. Aktifkan **Opsi developer**: *Setelan → Tentang ponsel → ketuk Nomor build 7×*.
 4. Buka *Opsi developer → Pilih aplikasi lokasi palsu → **Mock Location***.

@@ -40,6 +40,7 @@ data class Status(
     val traveled: Double = 0.0,
     val length: Double = 0.0,      // one route cycle, meters
     val finished: Boolean = false,
+    val dwell: Double = 0.0,       // seconds left at the current waypoint stop
     val error: String? = null,
 )
 
@@ -62,6 +63,9 @@ class MockService : Service() {
     private var loop = Loop.ONCE
     private var speed = 1.4
     private var humanize = false
+    private var dwell = 0.0
+    private var dwellLeft = 0.0
+    private var altitude = 12.0
     private var pos = Pt(0.0, 0.0)
     private var bearing = 0f
     private var traveled = 0.0
@@ -100,7 +104,9 @@ class MockService : Service() {
         loop = Loop.valueOf(i.getStringExtra(EXTRA_LOOP) ?: Loop.ONCE.name)
         speed = i.getDoubleExtra(EXTRA_SPEED, 1.4)
         humanize = i.getBooleanExtra(EXTRA_HUMANIZE, false)
-        route = points; pos = points.first(); traveled = 0.0; paused = false; bearing = 0f
+        dwell = i.getIntExtra(EXTRA_DWELL, 0).toDouble()
+        altitude = i.getDoubleExtra(EXTRA_ALT, 12.0)
+        route = points; pos = points.first(); traveled = 0.0; paused = false; bearing = 0f; dwellLeft = 0.0
         MockState.joyX = 0f; MockState.joyY = 0f
 
         try {
@@ -116,6 +122,7 @@ class MockService : Service() {
         running = true
         last = SystemClock.elapsedRealtime(); started = last
         handler.removeCallbacks(tick); handler.post(tick)
+        QsTile.refresh(this)
     }
 
     /** GPS is required; network is best-effort so fused-location apps don't see the real position. */
@@ -151,8 +158,13 @@ class MockService : Service() {
             Mode.ROUTE -> {
                 finished = loop == Loop.ONCE && traveled >= length
                 if (!paused && !finished) {
-                    v = speed * if (humanize) 1 + 0.1 * sin(t / 6) + 0.04 * sin(t / 1.7) else 1.0
-                    traveled += v * dt
+                    if (dwellLeft > 0) dwellLeft = (dwellLeft - dt).coerceAtLeast(0.0)
+                    else {
+                        v = speed * if (humanize) 1 + 0.1 * sin(t / 6) + 0.04 * sin(t / 1.7) else 1.0
+                        val next = traveled + v * dt
+                        val stop = if (dwell > 0) RoutePlayer.nextStop(route, loop, traveled, next) else null
+                        if (stop != null) { traveled = stop; dwellLeft = dwell } else traveled = next
+                    }
                 }
                 val f = RoutePlayer.along(route, traveled, loop)
                 pos = f.pt
@@ -171,7 +183,7 @@ class MockService : Service() {
         val out = if (humanize) RoutePlayer.move(pos, rnd.nextDouble(360.0), rnd.nextDouble(1.0)) else pos
         push(out, v)
         MockState.status.value = Status(true, paused, mode, loop, Fix(out.lat, out.lon, bearing), v, speed,
-            traveled, length, finished)
+            traveled, length, finished, dwellLeft)
         if (now - lastNotify > 3000) notifyNow()
     }
 
@@ -179,7 +191,8 @@ class MockService : Service() {
         val acc = if (humanize) 3f + rnd.nextFloat() * 5f else 4f
         for (name in providers) lm.setTestProviderLocation(name, Location(name).apply {
             latitude = p.lat; longitude = p.lon
-            altitude = 12.0; bearing = this@MockService.bearing; speed = v.toFloat()
+            altitude = this@MockService.altitude + if (humanize) rnd.nextDouble(-1.5, 1.5) else 0.0
+            bearing = this@MockService.bearing; speed = v.toFloat()
             accuracy = acc
             verticalAccuracyMeters = 3f; speedAccuracyMetersPerSecond = 0.3f; bearingAccuracyDegrees = 5f
             time = System.currentTimeMillis()
@@ -204,7 +217,7 @@ class MockService : Service() {
         val s = MockState.status.value
         val title = when (mode) {
             Mode.TELEPORT -> "Teleport aktif"
-            Mode.ROUTE -> if (s.finished) "Rute selesai" else "Menjalankan rute"
+            Mode.ROUTE -> when { s.finished -> "Rute selesai"; s.dwell > 0 -> "Singgah di titik"; else -> "Menjalankan rute" }
             Mode.JOYSTICK -> "Mode joystick"
         } + if (paused) " · dijeda" else ""
         val text = if (mode == Mode.ROUTE && running)
@@ -233,6 +246,7 @@ class MockService : Service() {
         providers.forEach { runCatching { lm.removeTestProvider(it) } }
         if (running) MockState.status.value = Status()
         running = false
+        QsTile.refresh(this)
     }
 
     override fun onBind(i: Intent?): IBinder? = null
@@ -255,15 +269,19 @@ class MockService : Service() {
         private const val EXTRA_SPEED = "speed"
         private const val EXTRA_HUMANIZE = "humanize"
         private const val EXTRA_FLOATING = "floating"
+        private const val EXTRA_DWELL = "dwell"
+        private const val EXTRA_ALT = "alt"
         private const val EXTRA_LAT = "lat"
         private const val EXTRA_LON = "lon"
 
-        fun start(ctx: Context, mode: Mode, points: List<Pt>, speed: Double, loop: Loop, humanize: Boolean, floating: Boolean) {
+        fun start(ctx: Context, mode: Mode, points: List<Pt>, speed: Double, loop: Loop, humanize: Boolean, floating: Boolean,
+                  dwellSec: Int = 0, altitude: Double = 12.0) {
             ctx.startForegroundService(Intent(ctx, MockService::class.java).setAction(ACTION_START)
                 .putExtra(EXTRA_MODE, mode.name).putExtra(EXTRA_LOOP, loop.name)
                 .putExtra(EXTRA_LATS, points.map { it.lat }.toDoubleArray())
                 .putExtra(EXTRA_LONS, points.map { it.lon }.toDoubleArray())
-                .putExtra(EXTRA_SPEED, speed).putExtra(EXTRA_HUMANIZE, humanize).putExtra(EXTRA_FLOATING, floating))
+                .putExtra(EXTRA_SPEED, speed).putExtra(EXTRA_HUMANIZE, humanize).putExtra(EXTRA_FLOATING, floating)
+                .putExtra(EXTRA_DWELL, dwellSec).putExtra(EXTRA_ALT, altitude))
         }
 
         private fun send(ctx: Context, action: String, block: Intent.() -> Unit = {}) {

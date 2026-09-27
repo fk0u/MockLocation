@@ -32,6 +32,7 @@ MockLocation/
 │       │   │   ├── MapScene.kt       # overlay peta + sumber ubin
 │       │   │   ├── MockService.kt    # foreground service mock
 │       │   │   ├── JoystickOverlay.kt
+│       │   │   ├── QsTile.kt        # tile Quick Settings
 │       │   │   ├── RoutePlayer.kt    # logika geo murni + GPX
 │       │   │   └── Store.kt          # persistensi
 │       │   └── res/                  # ikon, tema

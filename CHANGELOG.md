@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.1.0 (2026-09-27)
+
+### Fitur
+- **Singgah di titik**: rute bisa berhenti 5 dtk–1 mnt di setiap waypoint. Estimasi waktu ikut menghitungnya.
+- **Riwayat lokasi**: 20 lokasi Teleport/Joystick terakhir muncul di pencarian.
+- **Tile Quick Settings**: teleport ke titik terakhir atau hentikan mock langsung dari panel notifikasi.
+- **Setelan & Tentang**: ketinggian yang bisa diatur, buka ulang panduan setup, hapus riwayat dan cache peta, info versi dan lisensi.
+
+### Lainnya
+- Ketinggian kini ikut bervariasi saat *gerak natural* aktif.
+- Toolchain diperbarui: Gradle 9.7, Android Gradle Plugin 9.4, Kotlin 2.4, Compose BOM 2026.09.
+
 ## v2.0.0 (2026-09-27)
 
 Rilis publik pertama.

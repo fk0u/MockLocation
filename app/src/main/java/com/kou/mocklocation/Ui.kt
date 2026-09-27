@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -111,6 +112,7 @@ val Mode.label get() = when (this) { Mode.TELEPORT -> "Teleport"; Mode.ROUTE -> 
 val Mode.icon get() = when (this) { Mode.TELEPORT -> Icons.Rounded.PinDrop; Mode.ROUTE -> Icons.Rounded.Timeline; Mode.JOYSTICK -> Icons.Rounded.SportsEsports }
 val Loop.label get() = when (this) { Loop.ONCE -> "Sekali"; Loop.LOOP -> "Ulangi"; Loop.PINGPONG -> "Bolak-balik" }
 val Loop.icon get() = when (this) { Loop.ONCE -> Icons.Rounded.East; Loop.LOOP -> Icons.Rounded.Repeat; Loop.PINGPONG -> Icons.Rounded.SyncAlt }
+private val DWELLS = listOf(0 to "Tidak", 5 to "5 dtk", 15 to "15 dtk", 30 to "30 dtk", 60 to "1 mnt")
 private val PRESET_ICONS = listOf(Icons.Rounded.DirectionsWalk, Icons.Rounded.DirectionsRun, Icons.Rounded.DirectionsBike,
     Icons.Rounded.TwoWheeler, Icons.Rounded.DirectionsCar)
 
@@ -190,6 +192,7 @@ fun App(vm: AppVm) {
         }
     }
     if (showRoutes) RoutesDialog(vm) { showRoutes = false }
+    if (vm.showSettings) SettingsSheet(vm)
 }
 
 // ---------- map ----------
@@ -270,6 +273,7 @@ private fun MapFabs(vm: AppVm, s: Status) {
         AnimatedVisibility(s.running && !vm.follow, enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
             Fab(Icons.Rounded.MyLocation, "Ikuti posisi", active = true) { vm.follow = true }
         }
+        Fab(Icons.Rounded.Settings, "Setelan") { vm.showSettings = true }
         Fab(Icons.Rounded.ZoomOutMap, "Tampilkan semua") { vm.fitRequest++ }
         Box {
             Fab(Icons.Rounded.Layers, "Gaya peta") { styleMenu = true }
@@ -328,7 +332,8 @@ private fun SearchBox(vm: AppVm) {
             }
         }
         val showFavs = focused && vm.query.isEmpty() && vm.favorites.isNotEmpty()
-        AnimatedVisibility(vm.results.isNotEmpty() || coord != null || showFavs,
+        val showRecent = focused && vm.query.isEmpty() && vm.history.isNotEmpty()
+        AnimatedVisibility(vm.results.isNotEmpty() || coord != null || showFavs || showRecent,
             enter = fadeIn() + expandVertically(), exit = fadeOut() + shrinkVertically()) {
             LazyColumn(Modifier.padding(top = 8.dp).fillMaxWidth().heightIn(max = 320.dp).glass(RoundedCornerShape(18.dp)),
                 contentPadding = PaddingValues(vertical = 6.dp)) {
@@ -336,6 +341,13 @@ private fun SearchBox(vm: AppVm) {
                 if (showFavs) {
                     item { Label("Favorit", Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) }
                     items(vm.favorites) { f -> ResultRow(Icons.Rounded.Star, f.name, fmtPt(f.pt), Amber) { pick(f) } }
+                }
+                if (showRecent) {
+                    item { Label("Terakhir", Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) }
+                    items(vm.history) { h ->
+                        val parts = h.name.split(", ", limit = 2)
+                        ResultRow(Icons.Rounded.History, parts[0], parts.getOrElse(1) { fmtPt(h.pt) }, Muted) { pick(h) }
+                    }
                 }
                 items(vm.results) { r ->
                     val parts = r.name.split(", ", limit = 2)
@@ -537,12 +549,13 @@ private fun TeleportPane(vm: AppVm, onName: (NameFor) -> Unit) {
 @Composable
 private fun RoutePane(vm: AppVm, editable: Boolean, onImport: () -> Unit, onExport: () -> Unit, onName: (NameFor) -> Unit, onRoutes: () -> Unit) {
     val total by remember { derivedStateOf { RoutePlayer.total(vm.points) } }
+    val stops by remember { derivedStateOf { RoutePlayer.stops(vm.points, Loop.ONCE).size } }
     val n = vm.points.size
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Stat("Titik", "$n", Modifier.weight(1f))
             Stat("Jarak", fmtDist(total), Modifier.weight(1f))
-            Stat("Estimasi", if (n < 2) "–" else fmtDur(total / (vm.speedKmh / 3.6)), Modifier.weight(1.2f))
+            Stat("Estimasi", if (n < 2) "–" else fmtDur(total / (vm.speedKmh / 3.6) + stops * vm.dwellSec), Modifier.weight(1.2f))
         }
         if (n < 2) Hint("Ketuk peta untuk menambah titik · seret titik untuk memindah · ketuk titik untuk menghapus")
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -555,6 +568,18 @@ private fun RoutePane(vm: AppVm, editable: Boolean, onImport: () -> Unit, onExpo
             item { Tool(Icons.Rounded.FileDownload, "Ekspor GPX", n > 1, onExport) }
         }
         Segmented(Loop.entries, vm.loop, { it.label }, { it.icon }, enabled = editable) { vm.loop = it }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Rounded.HourglassBottom, null, Modifier.size(16.dp), tint = Muted)
+            Spacer(Modifier.width(6.dp))
+            Text("Singgah", style = MaterialTheme.typography.labelLarge, color = Muted)
+            Spacer(Modifier.width(10.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(DWELLS) { (sec, label) ->
+                    Chip(label, null, Teal, selected = vm.dwellSec == sec, enabled = editable) { vm.dwellSec = sec }
+                }
+            }
+        }
+        if (vm.dwellSec > 0) Hint("Berhenti sejenak di setiap titik, seperti mampir")
     }
 }
 
@@ -590,6 +615,7 @@ private fun RunInfo(s: Status, modifier: Modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(when {
                 s.finished -> "Tiba di tujuan ✓"
+                s.dwell > 0 -> "Singgah · ${s.dwell.roundToInt()} dtk"
                 s.loop == Loop.ONCE -> "Progres rute"
                 else -> "Putaran ${(s.traveled / len).toInt() + 1}"
             }, style = MaterialTheme.typography.titleSmall)
@@ -713,18 +739,21 @@ private fun Tool(icon: ImageVector, label: String, enabled: Boolean = true, onCl
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun Chip(label: String, icon: ImageVector, tint: Color, selected: Boolean, onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
+private fun Chip(label: String, icon: ImageVector?, tint: Color, selected: Boolean, enabled: Boolean = true,
+                 onLongClick: (() -> Unit)? = null, onClick: () -> Unit) {
     val haptic = LocalHapticFeedback.current
     val shape = RoundedCornerShape(12.dp)
     val bg by animateColorAsState(if (selected) tint.copy(alpha = .16f) else Card, label = "chipBg")
     val border by animateColorAsState(if (selected) tint.copy(alpha = .6f) else Hairline, label = "chipBorder")
-    Row(Modifier.clip(shape).background(bg).border(1.dp, border, shape)
-        .combinedClickable(
+    Row(Modifier.alpha(if (enabled) 1f else .5f).clip(shape).background(bg).border(1.dp, border, shape)
+        .combinedClickable(enabled = enabled,
             onLongClick = onLongClick?.let { f -> { haptic.performHapticFeedback(HapticFeedbackType.LongPress); f() } },
             onClick = { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); onClick() })
         .padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, null, Modifier.size(16.dp), tint = if (selected) tint else Muted)
-        Spacer(Modifier.width(6.dp))
+        if (icon != null) {
+            Icon(icon, null, Modifier.size(16.dp), tint = if (selected) tint else Muted)
+            Spacer(Modifier.width(6.dp))
+        }
         Text(label, style = MaterialTheme.typography.labelLarge, color = if (selected) tint else MaterialTheme.colorScheme.onSurface)
     }
 }
@@ -852,4 +881,51 @@ private fun RoutesDialog(vm: AppVm, onDismiss: () -> Unit) {
             }
         },
         confirmButton = { TextButton(onDismiss) { Text("Tutup") } })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsSheet(vm: AppVm) {
+    val ctx = LocalContext.current
+    val uri = LocalUriHandler.current
+    ModalBottomSheet({ vm.showSettings = false }, containerColor = Color(0xFF0E141C), contentColor = MaterialTheme.colorScheme.onSurface,
+        dragHandle = { BottomSheetDefaults.DragHandle(color = Color.White.copy(alpha = .2f)) }) {
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(bottom = 24.dp)) {
+            Text("Setelan", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 20.dp).padding(bottom = 8.dp))
+
+            Label("Lokasi", Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+            Column(Modifier.padding(horizontal = 20.dp)) {
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text("Ketinggian", style = MaterialTheme.typography.bodyLarge)
+                    Spacer(Modifier.weight(1f))
+                    Text("${vm.altitude.roundToInt()} m dpl", style = MaterialTheme.typography.titleMedium, color = Teal, fontWeight = FontWeight.Bold)
+                }
+                Slider(vm.altitude, { vm.altitude = it }, valueRange = 0f..3000f, onValueChangeFinished = vm::persist,
+                    colors = SliderDefaults.colors(thumbColor = Teal, activeTrackColor = Teal, inactiveTrackColor = Track))
+                Hint("Dipakai saat mulai berikutnya. Contoh: Jakarta ±8 m, Bandung ±770 m.")
+            }
+
+            Label("Aplikasi", Modifier.padding(horizontal = 20.dp).padding(top = 16.dp, bottom = 4.dp))
+            ResultRow(Icons.Rounded.Checklist, "Panduan setup", "Izin, opsi developer, aplikasi lokasi palsu") {
+                vm.showSettings = false; vm.refreshSetup(); vm.showSetup = true
+            }
+            ResultRow(Icons.Rounded.ToggleOn, "Tile Quick Settings",
+                if (Build.VERSION.SDK_INT >= 33) "Tambahkan tombol teleport ke panel notifikasi"
+                else "Edit panel Quick Settings, lalu seret tile Mock Location") { if (Build.VERSION.SDK_INT >= 33) vm.addTile() }
+
+            Label("Data", Modifier.padding(horizontal = 20.dp).padding(top = 16.dp, bottom = 4.dp))
+            ResultRow(Icons.Rounded.History, "Hapus riwayat", "${vm.history.size} lokasi terakhir") { vm.clearHistory() }
+            ResultRow(Icons.Rounded.CleaningServices, "Hapus cache peta", "Unduh ulang ubin peta saat dibutuhkan") { vm.clearMapCache() }
+
+            Label("Tentang", Modifier.padding(horizontal = 20.dp).padding(top = 16.dp, bottom = 4.dp))
+            ResultRow(Icons.Rounded.Info, "Mock Location ${vm.version}", "© 2026 Al-Ghani Desta Setyawan · Lisensi MIT") {}
+            ResultRow(Icons.Rounded.Code, "Kode sumber", "github.com/fk0u/MockLocation") { uri.openUri("https://github.com/fk0u/MockLocation") }
+            ResultRow(Icons.Rounded.BugReport, "Laporkan masalah", "Buka GitHub Issues") { uri.openUri("https://github.com/fk0u/MockLocation/issues") }
+            Text("Peta © Esri, HERE, Garmin, © OpenStreetMap contributors. Pencarian oleh Nominatim. Rendering peta oleh osmdroid.\n\n" +
+                "Gunakan untuk pengujian, demo, dan privasi. Android menandai lokasi ini sebagai mock; memakainya untuk menipu layanan, " +
+                "absensi, atau transaksi bisa melanggar ketentuan maupun hukum.",
+                style = MaterialTheme.typography.bodySmall, color = Muted, modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp))
+        }
+    }
 }

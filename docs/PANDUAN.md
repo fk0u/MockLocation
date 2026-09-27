@@ -10,8 +10,10 @@
 - [6. Kecepatan & gerak natural](#6-kecepatan--gerak-natural)
 - [7. Pencarian & favorit](#7-pencarian--favorit)
 - [8. Impor / ekspor GPX](#8-impor--ekspor-gpx)
-- [9. Tips per merek HP](#9-tips-per-merek-hp)
-- [10. Pemecahan masalah (FAQ)](#10-pemecahan-masalah-faq)
+- [9. Tile Quick Settings](#9-tile-quick-settings)
+- [10. Setelan & tentang](#10-setelan--tentang)
+- [11. Tips per merek HP](#11-tips-per-merek-hp)
+- [12. Pemecahan masalah (FAQ)](#12-pemecahan-masalah-faq)
 
 ---
 
@@ -46,6 +48,7 @@ Checklist bisa dibuka lagi kapan saja. Kalau ada langkah wajib yang belum selesa
 │ 🔍 Cari tempat / koordinat     │ ← pencarian
 │ ● LIVE · Rute · 5 km/j · -6.1… │ ← status (saat aktif)
 │                                │
+│                          [⚙]   │ ← setelan & tentang
 │            PETA          [⤢]   │ ← tampilkan semua
 │                          [☰]   │ ← gaya peta
 │  [🕹]                    [◎]   │ ← joystick / ikuti posisi
@@ -106,6 +109,8 @@ Kartu statistik menampilkan **jumlah titik**, **total jarak**, dan **estimasi wa
 - **Ulangi**: kembali ke titik 1 lalu mengulang terus (cocok untuk rute melingkar).
 - **Bolak-balik**: 1 → terakhir → 1 → …
 
+**Singgah**: pilih *5 dtk* sampai *1 mnt* agar rute berhenti sejenak di setiap titik, seperti mampir. Estimasi waktu ikut menghitung waktu singgah. Di mode *Ulangi* dan *Bolak-balik*, titik awal juga menjadi tempat singgah setiap putaran.
+
 Saat berjalan, panel menampilkan **progres**, **sisa jarak**, dan **ETA**. Tekan **Jeda** untuk berhenti sementara di posisi sekarang.
 
 <br clear="right">
@@ -157,7 +162,7 @@ Matikan kalau kamu butuh jalur yang presisi, misalnya untuk pengujian otomatis.
 - Hasil yang dipilih akan:
   - di mode Teleport/Joystick: menjadi titik tujuan/awal,
   - di mode Rute: ditambahkan sebagai waypoint.
-- Saat kolom pencarian kosong dan aktif, **favorit** ditampilkan.
+- Saat kolom pencarian kosong dan aktif, **favorit** dan **riwayat** (20 lokasi terakhir yang dipakai untuk Teleport/Joystick) ditampilkan. Riwayat bisa dihapus di **Setelan**.
 - **Tahan** chip favorit di mode Teleport untuk menghapusnya.
 
 <br clear="right">
@@ -167,7 +172,30 @@ Matikan kalau kamu butuh jalur yang presisi, misalnya untuk pengujian otomatis.
 - **Impor GPX**: pilih file `.gpx`. Aplikasi membaca *track point*, lalu *route point*, lalu *waypoint* (mana yang pertama ada). Rute besar ribuan titik didukung; di peta hanya titik awal (A) dan akhir (B) yang diberi label.
 - **Ekspor GPX**: menyimpan rute saat ini sebagai file GPX 1.1 yang bisa dibuka di Strava, Komoot, Google Earth, dll.
 
-## 9. Tips per merek HP
+## 9. Tile Quick Settings
+
+Tombol di panel notifikasi untuk teleport tanpa membuka aplikasi.
+
+- **Menambahkan**: di Android 13+ buka **⚙ Setelan → Tile Quick Settings**. Di versi lebih lama, tarik panel notifikasi, ketuk ✏️ (edit), lalu seret tile **Mock Location**.
+- **Ketuk saat mati**: teleport ke titik tujuan terakhir yang dipilih di aplikasi.
+- **Ketuk saat aktif**: hentikan mock (mode apa pun).
+- Jika belum ada titik tujuan atau setup belum lengkap, tile membuka aplikasi.
+
+## 10. Setelan & tentang
+
+Ketuk **⚙** di sisi kanan peta.
+
+| Setelan | Keterangan |
+|---|---|
+| **Ketinggian** | Altitude (m dpl) yang dilaporkan, 0–3000 m. Berlaku saat mulai berikutnya. |
+| **Panduan setup** | Buka lagi checklist izin dan opsi developer. |
+| **Tile Quick Settings** | Tambahkan tile ke panel notifikasi (Android 13+). |
+| **Hapus riwayat** | Kosongkan daftar lokasi terakhir. |
+| **Hapus cache peta** | Hapus ubin peta yang tersimpan untuk menghemat ruang. |
+
+Bagian **Tentang** menampilkan versi aplikasi, lisensi, tautan kode sumber, dan tempat melaporkan masalah.
+
+## 11. Tips per merek HP
 
 | Merek | Yang perlu diatur |
 |---|---|
@@ -176,7 +204,7 @@ Matikan kalau kamu butuh jalur yang presisi, misalnya untuk pengujian otomatis.
 | **Samsung** | *Perawatan perangkat → Baterai → Batas penggunaan latar belakang* → pastikan Mock Location tidak masuk *aplikasi tidur*. |
 | **Huawei** | *Baterai → Peluncuran aplikasi* → atur manual, aktifkan semua. |
 
-## 10. Pemecahan masalah (FAQ)
+## 12. Pemecahan masalah (FAQ)
 
 <details>
 <summary><b>Muncul "Pilih aplikasi ini sebagai aplikasi lokasi palsu"</b></summary>
